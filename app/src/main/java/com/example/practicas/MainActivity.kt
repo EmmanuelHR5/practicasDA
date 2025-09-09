@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -50,7 +53,10 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun PantallaPrincipal() {
     val context = LocalContext.current
-    var textoNombre by remember { mutableStateOf("") }
+    var valorA by remember { mutableStateOf("") }
+    var valorB by remember { mutableStateOf("") }
+    var Resultado by remember { mutableStateOf("") }
+
 
     Column(
         modifier = Modifier
@@ -60,38 +66,53 @@ fun PantallaPrincipal() {
         verticalArrangement = Arrangement.Center
     ) {
 
-        Text(
-            text = "Nombre",
-            color = Color.Blue,
-            fontSize = 40.sp
-        )
+        Row() {
+            TextField(
+                modifier = Modifier.padding(top = 16.dp),
+                value = valorA,
+                onValueChange = { valorA = it },
+            )
+        }
 
-        TextField(
-            modifier = Modifier.padding(top = 16.dp),
-            value = textoNombre,
-            onValueChange = { textoNombre = it },
-            placeholder = { Text("Ingresa tu nombre aquí") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
-            singleLine = true
-        )
+        Row() {
+            OutlinedTextField(
+                value = valorB,
+                onValueChange = { valorB = it }
+            )
+        }
 
-        Button(  modifier = Modifier.padding(top = 24.dp),
-            onClick = {
+        Row() {
+            OutlinedButton(onClick = {
+                val a = valorA.toInt()
+                val b = valorB.toInt()
+                val c = a + b
+                Resultado = c.toString()
 
-            if (textoNombre.isNotBlank()) {
-                val mensaje = "Enviado, $textoNombre"
-                Toast.makeText(context, mensaje, Toast.LENGTH_LONG).show()
+            }) {
+                Text(text = "Sumar")
             }
-        }) {
-            Text("Enviar")
+
+            OutlinedButton(onClick = {
+                valorA = ""
+                valorB = ""
+                Resultado = ""
+            }) {
+                Text(text = "Borrar")
+            }
+        }
+
+        Row() {
+            OutlinedTextField(
+                value = Resultado,
+                label = { Text("Resultado") },
+                onValueChange = { Resultado = it }
+
+                )
+            }
         }
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    PracticasTheme {
-        PantallaPrincipal()
-    }
-}
+
+
+
+

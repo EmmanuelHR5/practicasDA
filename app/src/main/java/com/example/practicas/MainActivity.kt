@@ -3,12 +3,18 @@ package com.example.practicas
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,100 +25,148 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalculadoraApp() {
-    var display by remember { mutableStateOf("") }
+    var display by remember { mutableStateOf("0") }
     var num1 by remember { mutableStateOf<Double?>(null) }
     var operador by remember { mutableStateOf<Char?>(null) }
-    var operandoIngresado by remember { mutableStateOf(false) } // indica si ya se puso un operador
+    var operandoIngresado by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(0.dp,60.dp,0.dp,0.dp),
-        verticalArrangement = Arrangement.Top
+            .background(Color.Black)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Bottom
     ) {
         // Pantalla
-        OutlinedTextField(
-            value = display,
-            onValueChange = { },
-            readOnly = true,
+        Text(
+            text = display,
+            color = Color.White,
+            fontSize = 48.sp,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
-            textStyle = LocalTextStyle.current.copy(fontSize = 32.sp),
-            label = null
+                .padding(bottom = 16.dp),
+            textAlign = TextAlign.End,
+            maxLines = 1
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        // Definición de los botones de la calculadora
+        val botones = listOf(
+            listOf("AC", "÷", "×"), // Fila de funciones simplificada
+            listOf("7", "8", "9", "-"),
+            listOf("4", "5", "6", "+"),
+            listOf("1", "2", "3", "="),
+            listOf("0", ".")
+        )
 
-        // Botonera
-        Column {
-            val botones = listOf(
-                listOf("7", "8", "9", "+"),
-                listOf("4", "5", "6", "-"),
-                listOf("1", "2", "3", "*"),
-                listOf("0", "C", "=", "/")
-            )
+        botones.forEach { fila ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                fila.forEach { texto ->
+                    // Determina el peso del botón para el layout
+                    val weight = when (texto) {
+                        "0" -> 2f // El botón '0' ocupa el doble de espacio
+                        "1","2","3","4","5","6","7","8","9","." -> 1f
+                        "=" -> 2f
+                        else -> 1.33f // Ajuste para que 3 botones llenen el espacio de 4
+                    }
 
-            botones.forEach { fila ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    fila.forEach { texto ->
-                        OutlinedButton(
-                            onClick = {
-                                when (texto) {
-                                    in "0".."9" -> {
-                                        display += texto
-                                    }
-                                    "+", "-", "*", "/" -> {
-                                        if (!operandoIngresado && display.isNotEmpty()) {
-                                            num1 = display.toDoubleOrNull()
-                                            operador = texto[0]
-                                            display += " $texto "
-                                            operandoIngresado = true
-                                        }
-                                        // si ya hay un operador, no hace nada
-                                    }
-                                    "=" -> {
-                                        if (num1 != null && operador != null) {
-                                            val partes = display.split(" ")
-                                            val num2 = partes.lastOrNull()?.toDoubleOrNull()
-                                            if (num2 != null) {
-                                                display = when (operador) {
-                                                    '+' -> "${num1!! + num2}"
-                                                    '-' -> "${num1!! - num2}"
-                                                    '*' -> "${num1!! * num2}"
-                                                    '/' -> if (num2 != 0.0) "${num1!! / num2}" else "Error"
-                                                    else -> ""
-                                                }
-                                                // Reiniciamos todo para la siguiente operación
-                                                num1 = null
-                                                operador = null
-                                                operandoIngresado = false
-                                            }
-                                        }
-                                    }
-                                    "C" -> {
-                                        display = ""
-                                        num1 = null
-                                        operador = null
+                    // Asigna colores según la función del botón
+                    val colorFondo = when (texto) {
+                        "÷", "×", "-", "+", "=" -> Color(0xFFFF9800) // Naranja para operadores
+                        "AC" -> Color(0xFFBDBDBD) // Gris claro para AC
+                        else -> Color(0xFF333333) // Gris oscuro para números
+                    }
+                    val colorTexto = if (texto == "AC") Color.Black else Color.White
+
+                    BotonCalc(
+                        texto = texto,
+                        colorFondo = colorFondo,
+                        colorTexto = colorTexto,
+                        modifier = Modifier.weight(weight),
+                        onClick = {
+                            when (texto) {
+                                in "0".."9" -> {
+                                    if (operandoIngresado) {
+                                        display = texto
                                         operandoIngresado = false
+                                    } else {
+                                        if (display == "0") display = texto else display += texto
                                     }
                                 }
-                            },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(4.dp)
-                        ) {
-                            Text(texto, fontSize = 22.sp)
+                                "." -> {
+                                    if (!display.contains(".")) {
+                                        display += "."
+                                    }
+                                }
+                                "+", "-", "×", "÷" -> {
+                                    num1 = display.toDoubleOrNull()
+                                    operador = when (texto) {
+                                        "+" -> '+'
+                                        "-" -> '-'
+                                        "×" -> '*'
+                                        "÷" -> '/'
+                                        else -> null
+                                    }
+                                    operandoIngresado = true
+                                }
+                                "=" -> {
+                                    if (num1 != null && operador != null && !operandoIngresado) {
+                                        val num2 = display.toDoubleOrNull()
+                                        if (num2 != null) {
+                                            val resultado = when (operador) {
+                                                '+' -> num1!! + num2
+                                                '-' -> num1!! - num2
+                                                '*' -> num1!! * num2
+                                                '/' -> if (num2 != 0.0) num1!! / num2 else Double.NaN
+                                                else -> 0.0
+                                            }
+                                            display = if (resultado.isNaN()) "Error" else if (resultado % 1 == 0.0) resultado.toInt().toString() else resultado.toString()
+                                            num1 = null
+                                            operador = null
+                                        }
+                                    }
+                                }
+                                "AC" -> {
+                                    display = "0"
+                                    num1 = null
+                                    operador = null
+                                    operandoIngresado = false
+                                }
+                            }
                         }
-                    }
+                    )
                 }
             }
         }
+    }
+}
+
+
+@Composable
+fun BotonCalc(
+    texto: String,
+    colorFondo: Color,
+    colorTexto: Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(containerColor = colorFondo),
+        shape = CircleShape,
+        modifier = modifier
+            .height(80.dp)
+    ) {
+        Text(
+            texto,
+            fontSize = 32.sp,
+            color = colorTexto
+        )
     }
 }

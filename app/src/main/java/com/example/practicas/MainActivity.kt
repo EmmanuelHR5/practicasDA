@@ -100,8 +100,6 @@ fun MainScreen(
     var limSup by remember { mutableStateOf("") }
     var isr by remember { mutableStateOf("") }
     var sueldoNeto by remember { mutableStateOf("") }
-
-    // Nuevas variables para mostrar cuota fija y % excedente
     var cuotaFijaCalculada by remember { mutableStateOf("") }
     var excedenteCalculado by remember { mutableStateOf("") }
 
@@ -147,7 +145,8 @@ fun MainScreen(
 
                 onClick = {
                     val ingresoLimpio = ingreso.trim().replace(",", "")
-                    val ingresoDouble = ingresoLimpio.toDoubleOrNull() ?: 0.0
+                    val ingresoDouble = ingresoLimpio.toDoubleOrNull() ?: 0.0 //si es posible lo pasa a doublr
+                                                                                //si no da un 0.0
 
                     var indice = -1
                     for (j in ingMinimo.indices) {
@@ -166,7 +165,7 @@ fun MainScreen(
                         isr = "%.2f".format(impuesto)
                         sueldoNeto = "%.2f".format(ingresoDouble - impuesto)
 
-                        // Guardar excedente y cuota fija
+
                         excedenteCalculado = "%.2f".format(exced)
                         cuotaFijaCalculada = "%.2f".format(cuotaFija[indice])
                     } else {
@@ -196,10 +195,10 @@ fun MainScreen(
                 .padding(16.dp)
         ) {
 
-            Textfield(value = limInf, label = "Límite Inferior", color = Color.Blue, fontSize = 30)
-            Spacer(modifier = Modifier.height(10.dp))
-            Textfield(value = limSup, label = "Límite Superior", color = Color.Cyan, fontSize = 30)
-            Spacer(modifier = Modifier.height(10.dp))
+//            Textfield(value = limInf, label = "Límite Inferior", color = Color.Blue, fontSize = 30)
+//            Spacer(modifier = Modifier.height(10.dp))
+//            Textfield(value = limSup, label = "Límite Superior", color = Color.Cyan, fontSize = 30)
+//            Spacer(modifier = Modifier.height(10.dp))
 
             Textfield(value = isr, label = "ISR", color = Color.Red, fontSize = 30)
             Spacer(modifier = Modifier.height(10.dp))

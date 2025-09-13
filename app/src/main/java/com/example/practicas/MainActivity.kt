@@ -3,24 +3,30 @@ package com.example.practicas
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import com.example.practicas.ui.theme.PracticasTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            CalculadoraApp()
+            PracticasTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    CalculadoraApp()
+                }
+            }
         }
     }
 }
@@ -31,29 +37,32 @@ fun CalculadoraApp() {
     var num1 by remember { mutableStateOf<Double?>(null) }
     var operador by remember { mutableStateOf<Char?>(null) }
     var operandoIngresado by remember { mutableStateOf(false) }
+    var contadorOperadores by remember { mutableStateOf(0) }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
-            .padding(16.dp),
+            .padding(16.dp)
+            .padding(bottom = 48.dp),
         verticalArrangement = Arrangement.Bottom
     ) {
         // Pantalla
         Text(
             text = display,
-            color = Color.White,
-            fontSize = 48.sp,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             textAlign = TextAlign.End,
-            maxLines = 1
+            maxLines = 1,
+            style = TextStyle(
+                color = Color.White,
+                fontSize = 48.sp
+            )
         )
 
-        // Definición de los botones de la calculadora
+        // Definición de los botones
         val botones = listOf(
-            listOf("AC", "÷", "×"), // Fila de funciones simplificada
+            listOf("AC", "÷", "×"), // fila 1
             listOf("7", "8", "9", "-"),
             listOf("4", "5", "6", "+"),
             listOf("1", "2", "3", "="),
@@ -68,19 +77,19 @@ fun CalculadoraApp() {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 fila.forEach { texto ->
-                    // Determina el peso del botón para el layout
+                    // Peso visual del botón
                     val weight = when (texto) {
-                        "0" -> 2f // El botón '0' ocupa el doble de espacio
-                        "1","2","3","4","5","6","7","8","9","." -> 1f
-                        "=" -> 2f
-                        else -> 1.33f // Ajuste para que 3 botones llenen el espacio de 4
+                        "0" -> 2.66f
+                        "=","." -> 1.33f
+                        "1","2","3","4","5","6","7","8","9" -> 1f
+                        else -> 1.33f
                     }
 
-                    // Asigna colores según la función del botón
+                    // Colores
                     val colorFondo = when (texto) {
-                        "÷", "×", "-", "+", "=" -> Color(0xFFFF9800) // Naranja para operadores
-                        "AC" -> Color(0xFFBDBDBD) // Gris claro para AC
-                        else -> Color(0xFF333333) // Gris oscuro para números
+                        "÷", "×", "-", "+", "=" -> Color(0xFFFF9800)//naranja
+                        "AC" -> Color(0xFFBDBDBD) //gris claro
+                        else -> Color(0xFF333333) //Gris
                     }
                     val colorTexto = if (texto == "AC") Color.Black else Color.White
 
@@ -93,31 +102,70 @@ fun CalculadoraApp() {
                             when (texto) {
                                 in "0".."9" -> {
                                     if (operandoIngresado) {
-                                        display = texto
+                                        display += texto
                                         operandoIngresado = false
                                     } else {
                                         if (display == "0") display = texto else display += texto
                                     }
                                 }
                                 "." -> {
-                                    if (!display.contains(".")) {
+                                    val partes = display.split(" ")
+                                    val ultimo = partes.lastOrNull() ?: ""
+                                    if (!ultimo.contains(".")) {
                                         display += "."
                                     }
                                 }
                                 "+", "-", "×", "÷" -> {
-                                    num1 = display.toDoubleOrNull()
-                                    operador = when (texto) {
+                                    val nuevoOperador = when (texto) {
                                         "+" -> '+'
                                         "-" -> '-'
                                         "×" -> '*'
                                         "÷" -> '/'
                                         else -> null
                                     }
-                                    operandoIngresado = true
+
+                                    if (operador == null) {
+                                        // Primer operador
+                                        num1 = display.toDoubleOrNull()
+                                        operador = nuevoOperador
+                                        display += " $texto "
+                                        operandoIngresado = true
+                                        contadorOperadores = 1
+                                    } else {
+                                        // Segundo operador → calcular primero
+                                        val partes = display.split(" ")
+                                        val num2 = partes.lastOrNull()?.toDoubleOrNull()
+                                        if (num1 != null && num2 != null && operador != null) {
+                                            val resultado = when (operador) {
+                                                '+' -> num1!! + num2
+                                                '-' -> num1!! - num2
+                                                '*' -> num1!! * num2
+                                                '/' -> if (num2 != 0.0) num1!! / num2 else Double.NaN
+                                                else -> 0.0
+                                            }
+
+                                            // Mostrar resultado parcial
+                                            display = if (resultado.isNaN()) {
+                                                "Error"
+                                            } else if (resultado % 1 == 0.0) {
+                                                resultado.toInt().toString()
+                                            } else {
+                                                resultado.toString()
+                                            }
+
+                                            // Guardar estado
+                                            num1 = if (resultado.isNaN()) null else resultado
+                                            operador = nuevoOperador
+                                            display += " $texto "
+                                            operandoIngresado = true
+                                            contadorOperadores = 1
+                                        }
+                                    }
                                 }
                                 "=" -> {
                                     if (num1 != null && operador != null && !operandoIngresado) {
-                                        val num2 = display.toDoubleOrNull()
+                                        val partes = display.split(" ")
+                                        val num2 = partes.lastOrNull()?.toDoubleOrNull()
                                         if (num2 != null) {
                                             val resultado = when (operador) {
                                                 '+' -> num1!! + num2
@@ -126,9 +174,16 @@ fun CalculadoraApp() {
                                                 '/' -> if (num2 != 0.0) num1!! / num2 else Double.NaN
                                                 else -> 0.0
                                             }
-                                            display = if (resultado.isNaN()) "Error" else if (resultado % 1 == 0.0) resultado.toInt().toString() else resultado.toString()
+                                            display = if (resultado.isNaN()) {
+                                                "Error"
+                                            } else if (resultado % 1 == 0.0) {
+                                                resultado.toInt().toString()
+                                            } else {
+                                                resultado.toString()
+                                            }
                                             num1 = null
                                             operador = null
+                                            contadorOperadores = 0
                                         }
                                     }
                                 }
@@ -137,6 +192,7 @@ fun CalculadoraApp() {
                                     num1 = null
                                     operador = null
                                     operandoIngresado = false
+                                    contadorOperadores = 0
                                 }
                             }
                         }
@@ -146,7 +202,6 @@ fun CalculadoraApp() {
         }
     }
 }
-
 
 @Composable
 fun BotonCalc(

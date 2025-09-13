@@ -31,6 +31,8 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+//Emmanuel Hernandez Rivas 22130804
+
 @Composable
 fun CalculadoraApp() {
     var display by remember { mutableStateOf("0") }

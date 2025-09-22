@@ -21,34 +21,43 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.practicas.Conferencia
 import com.example.practicas.Equipo
 
 
 @Composable
-fun HomeView(navController: NavHostController, equipos: List<Equipo>) {
-    LazyColumn(
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 50.dp)
-    ) {
-        items(equipos) { equipo ->
-            Card(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .fillMaxWidth()
-                    .clickable {
-                        navController.navigate("detalle/${equipo.nombre}")
-                    },
-                elevation = CardDefaults.cardElevation(4.dp)
-            ) {
-                Row(modifier = Modifier.padding(16.dp)) {
-                    Image(
-                        painter = painterResource(id = equipo.logo),
-                        contentDescription = equipo.nombre,
-                        modifier = Modifier.size(60.dp)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(text = equipo.nombre, style = MaterialTheme.typography.titleLarge)
-                        Text(text = equipo.ciudad, style = MaterialTheme.typography.bodyMedium)
+fun HomeView(navController: NavHostController, conferencias: List<Conferencia>) {
+    LazyColumn(contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 50.dp, bottom = 50.dp)) {
+        conferencias.forEach { conferencia ->
+            item {
+                Text(
+                    text = conferencia.nombre,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(12.dp)
+                )
+            }
+
+            items(conferencia.equipos) { equipo ->
+                Card(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .fillMaxWidth()
+                        .clickable {
+                            navController.navigate("detalle/${equipo.nombre}")
+                        },
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Row(modifier = Modifier.padding(16.dp)) {
+                        Image(
+                            painter = painterResource(id = equipo.logo),
+                            contentDescription = equipo.nombre,
+                            modifier = Modifier.size(60.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(text = equipo.nombre, style = MaterialTheme.typography.titleLarge)
+                            Text(text = equipo.ciudad, style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
             }

@@ -9,3 +9,8 @@ data class Equipo(
     val descripcion: String,
     val logo: Int
 )
+
+data class Conferencia(
+    val nombre: String,
+    val equipos: List<Equipo>
+)

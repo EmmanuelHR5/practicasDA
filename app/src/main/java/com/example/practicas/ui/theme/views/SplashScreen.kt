@@ -13,15 +13,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.delay
-
 import com.example.practicas.R
+import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(navController: NavHostController) {
     LaunchedEffect(Unit) {
-        delay(1000) // 2 segundos
-        navController.navigate("home") {
+        delay(1000) // 1 second
+        navController.navigate("conference_selection") {
             popUpTo("splash") { inclusive = true }
         }
     }

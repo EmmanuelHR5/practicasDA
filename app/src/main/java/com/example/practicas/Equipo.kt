@@ -1,5 +1,7 @@
 package com.example.practicas
 
+import androidx.compose.ui.graphics.Color
+
 data class Equipo(
     val nombre: String,
     val ciudad: String,
@@ -12,5 +14,6 @@ data class Equipo(
 
 data class Conferencia(
     val nombre: String,
-    val equipos: List<Equipo>
+    val equipos: List<Equipo>,
+    val colorFondo: Color
 )

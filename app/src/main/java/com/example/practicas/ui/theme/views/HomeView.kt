@@ -1,6 +1,7 @@
 package com.example.practicas.ui.theme.views
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,7 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.practicas.Conferencia
@@ -30,7 +33,10 @@ import com.example.practicas.R
 @Composable
 fun TeamListView(navController: NavHostController, conferencia: Conferencia) {
     Column(
-        modifier = Modifier.fillMaxSize().padding(top = 50.dp, bottom = 50.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(conferencia.colorFondo)
+            .padding(top = 50.dp, bottom = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LazyColumn(
@@ -38,12 +44,11 @@ fun TeamListView(navController: NavHostController, conferencia: Conferencia) {
             horizontalAlignment = Alignment.CenterHorizontally,
             contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 16.dp)
         ) {
-
-
             item {
                 Text(
                     text = conferencia.nombre,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color.White, // Texto en blanco para contraste
                     modifier = Modifier.padding(12.dp)
                 )
             }
@@ -56,7 +61,10 @@ fun TeamListView(navController: NavHostController, conferencia: Conferencia) {
                         .clickable {
                             navController.navigate("detalle/${equipo.nombre}")
                         },
-                    elevation = CardDefaults.cardElevation(4.dp)
+                    elevation = CardDefaults.cardElevation(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
                 ) {
                     Row(
                         modifier = Modifier.padding(16.dp),
@@ -77,11 +85,9 @@ fun TeamListView(navController: NavHostController, conferencia: Conferencia) {
             }
         }
 
-        // Botón para navegar a la selección de conferencias
         Button(
             onClick = {
                 navController.navigate("conference_selection") {
-                    // Evita que se apilen múltiples pantallas de conferencias
                     launchSingleTop = true
                 }
             },

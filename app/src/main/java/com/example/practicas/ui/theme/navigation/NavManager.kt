@@ -50,8 +50,10 @@ fun NavManager(conferencias: List<Conferencia>) {
         "teamDetail" -> selectedTeam?.let { team ->
             TeamDetailView(
                 equipo = team,
-                conferencia = selectedConference!!
+                conferencia = selectedConference!!,
+                onBack = { currentScreen = "teamList" }
             )
         }
+
     }
 }

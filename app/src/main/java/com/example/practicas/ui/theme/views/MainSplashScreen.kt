@@ -32,7 +32,7 @@ fun MainNFLSplash(onTimeout: () -> Unit) {
         Image(
             painter = painterResource(id = R.drawable.nfl_logo),
             contentDescription = "NFL Logo",
-            modifier = Modifier.size(200.dp)
+            modifier = Modifier.size(300.dp)
         )
     }
 }

@@ -25,36 +25,33 @@ import com.example.practicas.Conferencia
 import com.example.practicas.R
 
 @Composable
-fun ConferenceView(navController: NavHostController, conferencias: List<Conferencia>) {
-    // Buscamos cada conferencia por su nombre para asegurarnos de usar la correcta.
+fun ConferenceView(
+    conferencias: List<Conferencia>,
+    onConferenceSelected: (Conferencia) -> Unit
+) {
     val conferenciaAmericana = conferencias.find { it.nombre.contains("Americana") }
     val conferenciaNacional = conferencias.find { it.nombre.contains("Nacional") }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // --- MITAD SUPERIOR: CONFERENCIA AMERICANA ---
         if (conferenciaAmericana != null) {
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .background(conferenciaAmericana.colorFondo)
-                    .clickable {
-                        navController.navigate("team_list/${conferenciaAmericana.nombre}")
-                    },
+                    .clickable { onConferenceSelected(conferenciaAmericana) },
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    // Botón con Imagen
                     Image(
                         painter = painterResource(id = R.drawable.conferencia_americana),
                         contentDescription = "Logo Conferencia Americana",
                         modifier = Modifier.size(150.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    // Título de la Conferencia
                     Text(
                         text = conferenciaAmericana.nombre,
                         fontSize = 24.sp,
@@ -65,30 +62,25 @@ fun ConferenceView(navController: NavHostController, conferencias: List<Conferen
             }
         }
 
-        // --- MITAD INFERIOR: CONFERENCIA NACIONAL ---
         if (conferenciaNacional != null) {
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
                     .background(conferenciaNacional.colorFondo)
-                    .clickable {
-                        navController.navigate("team_list/${conferenciaNacional.nombre}")
-                    },
+                    .clickable { onConferenceSelected(conferenciaNacional) },
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(16.dp)
                 ) {
-                    // Botón con Imagen
                     Image(
                         painter = painterResource(id = R.drawable.conferencia_nacional),
                         contentDescription = "Logo Conferencia Nacional",
                         modifier = Modifier.size(150.dp)
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    // Título de la Conferencia
                     Text(
                         text = conferenciaNacional.nombre,
                         fontSize = 24.sp,

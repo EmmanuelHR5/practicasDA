@@ -1,34 +1,57 @@
 package com.example.practicas.ui.theme.navigation
 
-import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
+import TeamSplashScreen
+import androidx.compose.runtime.*
 import com.example.practicas.Conferencia
-import com.example.practicas.ui.theme.views.ConferenceView
-import com.example.practicas.ui.theme.views.SplashScreen
-import com.example.practicas.ui.theme.views.TeamDetailView
-import com.example.practicas.ui.theme.views.TeamListView
+import com.example.practicas.Equipo
+import com.example.practicas.ui.theme.views.*
 
 @Composable
-fun NavManager(navController: NavHostController, conferencias: List<Conferencia>) {
-    NavHost(navController, startDestination = "splash") {
-        composable("splash") { SplashScreen(navController) }
-        composable("conference_selection") { ConferenceView(navController, conferencias) }
-        composable("team_list/{conferenceName}") { backStackEntry ->
-            val conferenceName = backStackEntry.arguments?.getString("conferenceName")
-            val conference = conferencias.find { it.nombre == conferenceName }
-            conference?.let {
-                TeamListView(navController, it)
+fun NavManager(conferencias: List<Conferencia>) {
+    var currentScreen by remember { mutableStateOf("splashMain") }
+    var selectedTeam by remember { mutableStateOf<Equipo?>(null) }
+    var selectedConference by remember { mutableStateOf<Conferencia?>(null) }
+
+    when (currentScreen) {
+        // ---------------- Splash inicial NFL ----------------
+        "splashMain" -> MainNFLSplash {
+            currentScreen = "conferenceSelection"
+        }
+
+        // ---------------- Selección de conferencias ----------------
+        "conferenceSelection" -> ConferenceView(
+            conferencias = conferencias,
+            onConferenceSelected = { conference ->
+                selectedConference = conference
+                currentScreen = "teamList"
+            }
+        )
+
+        // ---------------- Lista de equipos ----------------
+        "teamList" -> selectedConference?.let { conference ->
+            TeamListView(
+                conference = conference,
+                onTeamSelected = { team ->
+                    selectedTeam = team
+                    currentScreen = "teamSplash"
+                },
+                onBack = { currentScreen = "conferenceSelection" }
+            )
+        }
+
+        // ---------------- Splash del equipo (casco) ----------------
+        "teamSplash" -> selectedTeam?.let { team ->
+            TeamSplashScreen(team) {
+                currentScreen = "teamDetail"
             }
         }
-        composable("detalle/{teamName}") { backStackEntry ->
-            val teamName = backStackEntry.arguments?.getString("teamName")
-            val team = conferencias.flatMap { it.equipos }.find { it.nombre == teamName }
-            val conference = conferencias.find { conf -> conf.equipos.any { it.nombre == teamName } }
-            if (team != null && conference != null) {
-                TeamDetailView(navController, team, conference)
-            }
+
+        // ---------------- Detalle del equipo ----------------
+        "teamDetail" -> selectedTeam?.let { team ->
+            TeamDetailView(
+                equipo = team,
+                conferencia = selectedConference!!
+            )
         }
     }
 }

@@ -9,7 +9,9 @@ data class Equipo(
     val jugadorMasImportante: String,
     val trofeos: String,
     val descripcion: String,
-    val logo: Int
+    val logo: Int,
+    val estadio :Int,
+    val casco :Int
 )
 
 data class Conferencia(

@@ -11,7 +11,9 @@ data class Equipo(
     val descripcion: String,
     val logo: Int,
     val estadio :Int,
-    val casco :Int
+    val casco :Int,
+    val JugadorFoto:Int
+
 )
 
 data class Conferencia(

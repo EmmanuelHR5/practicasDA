@@ -156,6 +156,39 @@ fun TeamDetailView(
                                 .height(220.dp),
                             contentScale = ContentScale.Fit
                         )
+
+                    }
+                }
+            }
+            // -------- Tarjeta del casco --------
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(6.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+
+                        Text(
+                            text = "El jugador más historico es ${equipo.jugadorMasImportante}",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            ),
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Image(
+                            painter = painterResource(equipo.JugadorFoto),
+                            contentDescription = "El jugador más historico para  ${equipo.nombre} es: ${equipo.jugadorMasImportante}",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp),
+                            contentScale = ContentScale.Fit
+                        )
                     }
                 }
             }

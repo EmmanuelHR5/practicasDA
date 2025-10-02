@@ -8,14 +8,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.airbnb.lottie.compose.*
 import com.example.practicas.Conferencia
 import com.example.practicas.Equipo
+import com.example.practicas.R
 
 @Composable
 fun TeamListView(
@@ -36,6 +39,22 @@ fun TeamListView(
             contentPadding = PaddingValues(vertical = 16.dp)
         ) {
             item {
+                // 🎞 Animación Lottie arriba del título
+                val composition by rememberLottieComposition(
+                    LottieCompositionSpec.RawRes(R.raw.footballspinning)
+                )
+                val progress by animateLottieCompositionAsState(
+                    composition,
+                    iterations = LottieConstants.IterateForever)
+
+
+                LottieAnimation(
+                    composition = composition,
+                    progress = { progress },
+                    modifier = Modifier.size(200.dp)
+                )
+
+                // Texto del nombre de la conferencia
                 Text(
                     text = conference.nombre,
                     style = MaterialTheme.typography.headlineLarge.copy(fontWeight = FontWeight.Bold),
@@ -44,6 +63,7 @@ fun TeamListView(
                 )
             }
 
+            // Lista de equipos
             items(conference.equipos) { equipo ->
                 Card(
                     modifier = Modifier
@@ -72,6 +92,7 @@ fun TeamListView(
             }
         }
 
+        // Botón de regreso
         Button(
             onClick = { onBack() },
             modifier = Modifier.padding(bottom = 60.dp)

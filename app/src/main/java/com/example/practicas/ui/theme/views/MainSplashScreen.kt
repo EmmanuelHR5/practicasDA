@@ -40,7 +40,7 @@ fun MainNFLSplash(onTimeout: () -> Unit) {
 
             // Animación Lottie debajo del logo
             val composition by rememberLottieComposition(
-                LottieCompositionSpec.RawRes(R.raw.footballspinning)
+                LottieCompositionSpec.RawRes(R.raw.greenball)
             )
             val progress by animateLottieCompositionAsState(composition)
 

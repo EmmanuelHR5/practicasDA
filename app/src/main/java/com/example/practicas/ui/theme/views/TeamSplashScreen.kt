@@ -16,7 +16,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun TeamSplashScreen(team: Equipo, onTimeout: () -> Unit) {
     LaunchedEffect(Unit) {
-        delay(800) // 1.5 segundos
+        delay(800)
         onTimeout()
     }
 

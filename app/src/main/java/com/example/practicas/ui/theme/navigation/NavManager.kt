@@ -1,5 +1,6 @@
 package com.example.practicas.ui.theme.navigation
 
+import MainNFLSplash
 import TeamSplashScreen
 import androidx.compose.runtime.*
 import com.example.practicas.Conferencia

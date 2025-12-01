@@ -8,7 +8,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.firebasenotes.viewModels.LoginViewModel
 import com.example.firebasenotes.viewModels.NotesViewModel
+import com.example.firebasenotes.views.RecuperarContrasenaView
 import com.example.firebasenotes.views.login.BlankView
+import com.example.firebasenotes.views.login.ForgotPasswordScreen
 import com.example.firebasenotes.views.notes.HomeView
 import com.example.firebasenotes.views.login.TabsView
 import com.example.firebasenotes.views.notes.AddNoteView
@@ -36,5 +38,13 @@ fun NavManager(loginVM: LoginViewModel, notesVM: NotesViewModel){
             val idDoc = it.arguments?.getString("idDoc") ?: ""
             EditNoteView(navController, notesVM, idDoc)
         }
+        composable("forgotPassword"){
+            ForgotPasswordScreen(navController)
+        }
+        composable("recuperar") {
+            RecuperarContrasenaView(navController)
+        }
+
+
     }
 }

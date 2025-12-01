@@ -22,8 +22,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.firebasenotes.components.Alert
 import com.example.firebasenotes.viewModels.LoginViewModel
+import com.example.firebasenotes.R
+import com.example.firebasenotes.components.Alert
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,12 +83,14 @@ fun RegisterView(navController: NavController, loginVM: LoginViewModel) {
         }
 
         if (loginVM.showAlert) {
-            Alert(title = "Alerta",
+            Alert(
+                title = "Alerta",
                 message = "Usuario no creado",
-                confirmText = "Aceptar",
-                onConfirmClick = { loginVM.closeAlert() }) {
-            }
+                animation = R.raw.error,
+                onDismiss = { loginVM.closeAlert() }
+            )
         }
+
 
 
     }

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Verificando correo...</title>
+  <script>
+    window.onload = function () {
+      // Obtener parámetros de Firebase Auth
+      const params = new URLSearchParams(window.location.search);
+      const mode = params.get("mode");
+      const oobCode = params.get("oobCode");
+
+      if (mode === "verifyEmail" && oobCode) {
+        // Intentar abrir la app
+        window.location.href = `myapp://verifyEmail?oobCode=${oobCode}`;
+
+        // Como fallback, mostrar mensaje
+        setTimeout(() => {
+          document.body.innerHTML = `
+            <h2>Correo verificado</h2>
+            <p>Si la aplicación no se abrió automáticamente, ábrela manualmente.</p>
+          `;
+        }, 3000);
+      } else {
+        document.body.innerHTML = "<h2>Nada que verificar.</h2>";
+      }
+    };
+  </script>
+</head>
+<body>
+  <h2>Verificando correo...</h2>
+</body>
+</html>

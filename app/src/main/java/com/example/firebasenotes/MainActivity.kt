@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -31,20 +32,19 @@ class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ViewModels
+        enableEdgeToEdge()
+
         val loginVM: LoginViewModel by viewModels()
         val notesVM: NotesViewModel by viewModels()
         val themeVM: ThemeViewModel by viewModels()
 
-        // Procesar link de verificación (si viene del correo)
         handleIncomingVerificationLink()
 
         setContent {
 
-            // OJO: Aquí SÍ tomamos el valor del modo oscuro
             val isDark by themeVM.isDarkMode.observeAsState(initial = false)
 
-            FirebaseNotesTheme(darkTheme = isDark) {   // 👈 CORRECCIÓN IMPORTANTE
+            FirebaseNotesTheme(darkTheme = isDark) {
 
                 val context = LocalContext.current
                 val seen by getOnboardingSeen(context).collectAsState(initial = false)
@@ -53,32 +53,24 @@ class MainActivity : FragmentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (seen) {
-                        // Ahora NavManager puede manejar rutas como AccountView
-                        NavManager(
-                            loginVM = loginVM,
-                            notesVM = notesVM,
-                            themeVM = themeVM
-                        )
-                    } else {
-                        OnboardingScreen()
-                    }
+
+                    NavManager(
+                        loginVM = loginVM,
+                        notesVM = notesVM,
+                        themeVM = themeVM,
+                        startInSplash = true, // 👈 IMPORTANTE
+                        onboardingSeen = seen
+                    )
                 }
             }
         }
     }
 
-    // ------------------------------
-    // Procesar Deep Link de Firebase
-    // ------------------------------
-
     private fun handleIncomingVerificationLink() {
         val data = intent?.data
         if (data != null) {
             val oobCode = data.getQueryParameter("oobCode")
-            if (oobCode != null) {
-                verifyEmail(oobCode)
-            }
+            if (oobCode != null) verifyEmail(oobCode)
         }
     }
 
@@ -86,7 +78,6 @@ class MainActivity : FragmentActivity() {
         FirebaseAuth.getInstance().applyActionCode(oobCode)
             .addOnSuccessListener {
                 Toast.makeText(this, "Correo verificado correctamente", Toast.LENGTH_LONG).show()
-
                 val intent = Intent(this, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 intent.putExtra("openLogin", true)

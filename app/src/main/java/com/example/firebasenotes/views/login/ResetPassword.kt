@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
@@ -19,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -29,15 +31,20 @@ import com.google.firebase.auth.FirebaseAuth
 fun ForgotPasswordScreen(nav: NavController) {
 
     var email by remember { mutableStateOf("") }
-    val context = LocalContext.current
+    val ctx = LocalContext.current
 
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Recuperar Contraseña", fontSize = 22.sp)
+
+        Text(
+            "Recuperar contraseña",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold
+        )
 
         Spacer(Modifier.height(20.dp))
 
@@ -45,6 +52,7 @@ fun ForgotPasswordScreen(nav: NavController) {
             value = email,
             onValueChange = { email = it },
             label = { Text("Correo registrado") },
+            singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -55,15 +63,17 @@ fun ForgotPasswordScreen(nav: NavController) {
                 FirebaseAuth.getInstance()
                     .sendPasswordResetEmail(email)
                     .addOnSuccessListener {
-                        Toast.makeText(context, "Correo enviado", Toast.LENGTH_LONG).show()
+                        Toast.makeText(ctx, "Correo enviado", Toast.LENGTH_LONG).show()
                     }
                     .addOnFailureListener {
-                        Toast.makeText(context, "Error: ${it.message}", Toast.LENGTH_LONG).show()
+                        Toast.makeText(ctx, "Error: ${it.message}", Toast.LENGTH_LONG).show()
                     }
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(14.dp)
         ) {
-            Text("Enviar correo de recuperación")
+            Text("Enviar enlace")
         }
     }
 }
+

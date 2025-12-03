@@ -1,6 +1,8 @@
 package com.example.firebasenotes.views.notes
 
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,6 +63,23 @@ fun EditNoteView(
         "#FFCDD2"
     )
 
+    val categories = listOf("General", "Personal", "Trabajo", "Escuela", "Ideas")
+    var categoryExpanded by remember { mutableStateOf(false) }
+
+    val exportPdfLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        if (uri != null) {
+            notesVM.exportNoteAsPdfToUri(
+                context = context,
+                uri = uri,
+                title = state.title,
+                content = state.note
+            )
+        }
+    }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -97,6 +116,19 @@ fun EditNoteView(
                             )
                         }
                     }
+
+                    // Exportar PDF
+                    IconButton(onClick = {
+                        val suggestedName = (state.title.ifBlank { "nota" }) + ".pdf"
+                        exportPdfLauncher.launch(suggestedName)
+                    }) {
+                        Icon(
+                            Icons.Default.PictureAsPdf,
+                            contentDescription = "Exportar PDF"
+                        )
+                    }
+
+
 
                     // Compartir
                     IconButton(onClick = {
@@ -157,51 +189,49 @@ fun EditNoteView(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = parseHexColor(state.colorHex),
-                    contentColor = Color.Black    // 👈 TEXTO NEGRO
+                    contentColor = Color.Black
                 )
             ) {
-            Column(modifier = Modifier.padding(20.dp)) {
+                Column(modifier = Modifier.padding(20.dp)) {
 
-                OutlinedTextField(
-                    value = state.title,
-                    onValueChange = { notesVM.onValue(it, "title") },
-                    label = { Text("Título", color = Color.Black) },
-                    textStyle = LocalTextStyle.current.copy(color = Color.Black),
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Black,
-                        cursorColor = Color.Black
+                    OutlinedTextField(
+                        value = state.title,
+                        onValueChange = { notesVM.onValue(it, "title") },
+                        label = { Text("Título", color = Color.Black) },
+                        textStyle = LocalTextStyle.current.copy(color = Color.Black),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedLabelColor = Color.Black,
+                            unfocusedLabelColor = Color.Black,
+                            cursorColor = Color.Black
+                        )
                     )
-                )
 
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedTextField(
-                    value = state.note,
-                    onValueChange = { notesVM.onValue(it, "note") },
-                    label = { Text("Contenido de la nota", color = Color.Black) },
-                    textStyle = LocalTextStyle.current.copy(color = Color.Black),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(260.dp),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.Black,
-                        unfocusedTextColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Black,
-                        cursorColor = Color.Black
+                    OutlinedTextField(
+                        value = state.note,
+                        onValueChange = { notesVM.onValue(it, "note") },
+                        label = { Text("Contenido de la nota", color = Color.Black) },
+                        textStyle = LocalTextStyle.current.copy(color = Color.Black),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(260.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.Black,
+                            unfocusedTextColor = Color.Black,
+                            focusedLabelColor = Color.Black,
+                            unfocusedLabelColor = Color.Black,
+                            cursorColor = Color.Black
+                        )
                     )
-                )
 
-
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
                         text = "Color de la nota",
@@ -229,7 +259,6 @@ fun EditNoteView(
                                     ) {
                                         notesVM.setColor(colorHex)
                                     }
-
                                     .then(
                                         if (isSelected) Modifier
                                             .border(
@@ -240,6 +269,52 @@ fun EditNoteView(
                                         else Modifier
                                     )
                             )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Categoría",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = categoryExpanded,
+                        onExpandedChange = { categoryExpanded = !categoryExpanded }
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = state.category,
+                            onValueChange = {},
+                            label = { Text("Categoría") },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedTextColor = Color.Black,
+                                unfocusedTextColor = Color.Black,
+                                focusedLabelColor = Color.Black,
+                                unfocusedLabelColor = Color.Black,
+                                cursorColor = Color.Black
+                            )
+                        )
+                        ExposedDropdownMenu(
+                            expanded = categoryExpanded,
+                            onDismissRequest = { categoryExpanded = false }
+                        ) {
+                            categories.forEach { cat ->
+                                DropdownMenuItem(
+                                    text = { Text(cat) },
+                                    onClick = {
+                                        notesVM.onValue(cat, "category")
+                                        categoryExpanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }

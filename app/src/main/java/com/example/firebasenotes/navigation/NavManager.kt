@@ -8,6 +8,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.firebasenotes.viewModels.LoginViewModel
 import com.example.firebasenotes.viewModels.NotesViewModel
+import com.example.firebasenotes.viewModels.ThemeViewModel
+import com.example.firebasenotes.views.AccountView
 import com.example.firebasenotes.views.RecuperarContrasenaView
 import com.example.firebasenotes.views.login.BlankView
 import com.example.firebasenotes.views.login.ForgotPasswordScreen
@@ -15,9 +17,10 @@ import com.example.firebasenotes.views.notes.HomeView
 import com.example.firebasenotes.views.login.TabsView
 import com.example.firebasenotes.views.notes.AddNoteView
 import com.example.firebasenotes.views.notes.EditNoteView
+import com.example.firebasenotes.views.notes.TrashView
 
 @Composable
-fun NavManager(loginVM: LoginViewModel, notesVM: NotesViewModel){
+fun NavManager(loginVM: LoginViewModel, notesVM: NotesViewModel,themeVM: ThemeViewModel){
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "Blank" ){
         composable("Blank"){
@@ -27,7 +30,7 @@ fun NavManager(loginVM: LoginViewModel, notesVM: NotesViewModel){
             TabsView(navController, loginVM)
         }
         composable("Home"){
-            HomeView(navController, notesVM)
+            HomeView(navController, notesVM, themeVM)
         }
         composable("AddNoteView"){
             AddNoteView(navController, notesVM)
@@ -44,7 +47,12 @@ fun NavManager(loginVM: LoginViewModel, notesVM: NotesViewModel){
         composable("recuperar") {
             RecuperarContrasenaView(navController)
         }
-
+        composable("AccountView"){
+            AccountView(navController,notesVM)
+        }
+        composable("TrashView"){
+            TrashView(navController, notesVM)
+        }
 
     }
 }

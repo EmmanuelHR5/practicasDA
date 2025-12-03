@@ -11,29 +11,41 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.firebasenotes.dataStore.getOnboardingSeen
 import com.example.firebasenotes.navigation.NavManager
 import com.example.firebasenotes.onBoarding.OnboardingScreen
 import com.example.firebasenotes.ui.theme.FirebaseNotesTheme
 import com.example.firebasenotes.viewModels.LoginViewModel
 import com.example.firebasenotes.viewModels.NotesViewModel
+import com.example.firebasenotes.viewModels.ThemeViewModel
 import com.google.firebase.auth.FirebaseAuth
 
-class MainActivity : ComponentActivity() {
+
+class MainActivity : FragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // ViewModels
         val loginVM: LoginViewModel by viewModels()
         val notesVM: NotesViewModel by viewModels()
+        val themeVM: ThemeViewModel by viewModels()
 
-        // 💥 PROCESAR EL LINK DE VERIFICACIÓN SI VIENE DEL HOSTING
+        // Procesar link de verificación (si viene del correo)
         handleIncomingVerificationLink()
 
         setContent {
-            FirebaseNotesTheme {
+
+            // OJO: Aquí SÍ tomamos el valor del modo oscuro
+            val isDark by themeVM.isDarkMode.observeAsState(initial = false)
+
+            FirebaseNotesTheme(darkTheme = isDark) {   // 👈 CORRECCIÓN IMPORTANTE
+
                 val context = LocalContext.current
                 val seen by getOnboardingSeen(context).collectAsState(initial = false)
 
@@ -42,7 +54,12 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colorScheme.background
                 ) {
                     if (seen) {
-                        NavManager(loginVM, notesVM)
+                        // Ahora NavManager puede manejar rutas como AccountView
+                        NavManager(
+                            loginVM = loginVM,
+                            notesVM = notesVM,
+                            themeVM = themeVM
+                        )
                     } else {
                         OnboardingScreen()
                     }
@@ -51,29 +68,25 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // ------------------------------------------------------------------------------
-    // ⭐ RECIBE EL DEEP LINK: myapp://verifyEmail?oobCode=XXXX
-    // ------------------------------------------------------------------------------
+    // ------------------------------
+    // Procesar Deep Link de Firebase
+    // ------------------------------
+
     private fun handleIncomingVerificationLink() {
         val data = intent?.data
         if (data != null) {
             val oobCode = data.getQueryParameter("oobCode")
-
             if (oobCode != null) {
                 verifyEmail(oobCode)
             }
         }
     }
 
-    // ------------------------------------------------------------------------------
-    // ⭐ VERIFICA EL CORREO EN FIREBASE
-    // ------------------------------------------------------------------------------
     private fun verifyEmail(oobCode: String) {
         FirebaseAuth.getInstance().applyActionCode(oobCode)
             .addOnSuccessListener {
                 Toast.makeText(this, "Correo verificado correctamente", Toast.LENGTH_LONG).show()
 
-                // 🔥 Reiniciar la app y mandar al Login
                 val intent = Intent(this, MainActivity::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 intent.putExtra("openLogin", true)

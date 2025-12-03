@@ -85,7 +85,7 @@ fun LoginView(navController: NavController, loginVM: LoginViewModel) {
         if (loginVM.showAlert) {
             Alert(
                 title = "Alerta",
-                message = "Usuario y/o Contrasena Incorrectos",
+                message = "Usuario y/o Contraseña Incorrectos",
                 animation = R.raw.error,
                 onDismiss = { loginVM.closeAlert() }
             )

@@ -3,17 +3,19 @@ package com.example.firebasenotes.views.notes
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,8 +47,10 @@ fun NoteItemSwipeable(
             .heightIn(min = 95.dp)
             .padding(vertical = 6.dp)
     ) {
-    when {
+
+        when {
             offsetX > 40 -> {
+                // Fondo verde (editar)
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -63,6 +67,7 @@ fun NoteItemSwipeable(
             }
 
             offsetX < -40 -> {
+                // Fondo rojo (eliminar)
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -79,6 +84,30 @@ fun NoteItemSwipeable(
             }
         }
 
+        var showDeleteDialog by remember { mutableStateOf(false) }
+
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { Text("Eliminar nota") },
+                text = { Text("¿Seguro que deseas eliminar esta nota? Esta acción no se puede deshacer.") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        notesVM.deleteNote(note.idDoc) {}
+                        showDeleteDialog = false
+                    }) {
+                        Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
+        }
+
+
         Card(
             modifier = Modifier
                 .matchParentSize()
@@ -88,7 +117,7 @@ fun NoteItemSwipeable(
                         onDragEnd = {
                             when {
                                 offsetX > 120 -> navController.navigate("EditNoteView/${note.idDoc}")
-                                offsetX < -120 -> notesVM.deleteNote(note.idDoc) {}
+                                offsetX < -120 -> notesVM.moveToTrash(note.idDoc) {}   // 👈 ANTES llamaba deleteNote
                             }
                             offsetX = 0f
                         },
@@ -98,13 +127,7 @@ fun NoteItemSwipeable(
                             if (abs(offsetX) > 220) offsetX = 220f * (offsetX / abs(offsetX))
                         }
                     )
-                }
-                .then(
-                    Modifier // aplicamos interacción al Modifier, no al Card
-                        .let {
-                            it
-                        }
-                ),
+                },
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(
                 containerColor = backgroundColor
@@ -129,8 +152,15 @@ fun NoteItemSwipeable(
                             tint = Color(0xFFFFC107)
                         )
                     }
-
                 }
+
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    text = note.category,
+                    fontSize = 12.sp,
+                    color = Color.DarkGray
+                )
 
                 Spacer(Modifier.height(6.dp))
 
@@ -139,7 +169,6 @@ fun NoteItemSwipeable(
                     fontSize = 14.sp,
                     color = Color.Black
                 )
-
 
                 Spacer(Modifier.height(6.dp))
 

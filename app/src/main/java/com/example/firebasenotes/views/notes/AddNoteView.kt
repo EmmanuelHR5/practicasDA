@@ -1,6 +1,5 @@
 package com.example.firebasenotes.views.notes
 
-import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
@@ -35,7 +34,11 @@ fun AddNoteView(navController: NavController, notesVM: NotesViewModel) {
     var selectedColor by remember { mutableStateOf("#FFFFFF") }
     var isFavorite by remember { mutableStateOf(false) }
 
+    var category by remember { mutableStateOf("General") }
+    val categories = listOf("General", "Personal", "Trabajo", "Escuela", "Ideas")
+
     val context = LocalContext.current
+    var categoryExpanded by remember { mutableStateOf(false) }
 
     val wordCount = remember(note) {
         note.trim()
@@ -45,11 +48,11 @@ fun AddNoteView(navController: NavController, notesVM: NotesViewModel) {
     }
 
     val colorOptions = listOf(
-        "#FFFFFF",  // blanco
-        "#FFF9C4",  // amarillo suave
-        "#BBDEFB",  // azul claro
-        "#C8E6C9",  // verde claro
-        "#FFCDD2"   // rojo suave
+        "#FFFFFF",
+        "#FFF9C4",
+        "#BBDEFB",
+        "#C8E6C9",
+        "#FFCDD2"
     )
 
     Scaffold(
@@ -138,7 +141,6 @@ fun AddNoteView(navController: NavController, notesVM: NotesViewModel) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Paleta de colores
                     Text(
                         text = "Color de la nota",
                         style = MaterialTheme.typography.bodyMedium,
@@ -177,12 +179,50 @@ fun AddNoteView(navController: NavController, notesVM: NotesViewModel) {
                             )
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Categoría",
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    ExposedDropdownMenuBox(
+                        expanded = categoryExpanded,
+                        onExpandedChange = { categoryExpanded = !categoryExpanded }
+                    ) {
+                        OutlinedTextField(
+                            readOnly = true,
+                            value = category,
+                            onValueChange = {},
+                            label = { Text("Categoría") },
+                            modifier = Modifier
+                                .menuAnchor()
+                                .fillMaxWidth()
+                        )
+                        ExposedDropdownMenu(
+                            expanded = categoryExpanded,
+                            onDismissRequest = { categoryExpanded = false }
+                        ) {
+                            categories.forEach { cat ->
+                                DropdownMenuItem(
+                                    text = { Text(cat) },
+                                    onClick = {
+                                        category = cat
+                                        categoryExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Contador de palabras
             Text(
                 text = "Palabras: $wordCount",
                 style = MaterialTheme.typography.bodySmall,
@@ -196,34 +236,23 @@ fun AddNoteView(navController: NavController, notesVM: NotesViewModel) {
 
             Button(
                 onClick = {
-                    Log.d("ADD_BUTTON", "Botón presionado")
-
                     if (title.isBlank() || note.isBlank()) {
-                        Log.e("ADD_BUTTON", "Campos vacíos")
                         Toast.makeText(context, "Completa todos los campos", Toast.LENGTH_SHORT)
                             .show()
                         return@Button
                     }
-
-                    Log.d("ADD_CALL", "Llamando a saveNewNote...")
 
                     notesVM.saveNewNote(
                         title = title,
                         note = note,
                         colorHex = selectedColor,
                         isFavorite = isFavorite,
+                        category = category,
                         onSuccess = {
-                            Log.d("ADD_SUCCESS", "onSuccess ejecutado correctamente")
-
                             Toast.makeText(context, "Nota añadida", Toast.LENGTH_SHORT).show()
-
-                            Log.d("NAVIGATION", "Intentando navegar a Home...")
-                            navController.navigate("Home") {
-                                popUpTo("Home") { inclusive = true }
-                            }
+                            navController.popBackStack()
                         },
                         onFailure = { errorMsg ->
-                            Log.e("ADD_FAILURE", "Error al guardar: $errorMsg")
                             Toast.makeText(context, "Error: $errorMsg", Toast.LENGTH_LONG).show()
                         }
                     )

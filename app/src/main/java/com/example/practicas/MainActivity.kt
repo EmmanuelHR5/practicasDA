@@ -1,47 +1,75 @@
 package com.example.practicas
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.practicas.ui.theme.PracticasTheme
+import androidx.lifecycle.ViewModelProvider
+import androidx.compose.runtime.*
+import androidx.navigation.compose.rememberNavController
+import com.example.practicas.navigation.AppNavigation
+import com.example.practicas.viewmodel.MusicViewModel
+import com.example.practicas.ui.theme.AppTheme
+import com.example.practicas.viewmodel.SpotifyOAuthViewModel
+import com.example.practicas.views.HomeScreen
+import com.example.practicas.views.LoginSpotifyScreen
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var oauthVM: SpotifyOAuthViewModel
+    private lateinit var musicVM: MusicViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+
+        oauthVM = ViewModelProvider(this)[SpotifyOAuthViewModel::class.java]
+        musicVM = ViewModelProvider(this)[MusicViewModel::class.java]
+
+        handleRedirect(intent)
+
         setContent {
-            PracticasTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+
+            var isDark by remember { mutableStateOf(true) }
+
+            AppTheme(darkTheme = isDark) {
+                val navController = rememberNavController()
+
+                LaunchedEffect(Unit) {
+                    oauthVM.checkAuthState()
+                }
+
+                val isLoggedIn by oauthVM.isAuthenticated.collectAsState()
+
+                if (!isLoggedIn) {
+                    LoginSpotifyScreen(oauthVM)
+                } else {
+                    AppNavigation(
+                        navController = navController,
+                        musicVM = musicVM,
+                        onToggleTheme = { isDark = !isDark },
+                        onLogout = {
+                            // 1) Marcamos al ViewModel como NO autenticado
+                            oauthVM.isAuthenticated.value = false
+                        }
                     )
                 }
             }
+
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleRedirect(intent)
+    }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PracticasTheme {
-        Greeting("Android")
+    private fun handleRedirect(intent: Intent) {
+        val data = intent.data ?: return
+        if (data.scheme == "com.example.practicas" && data.host == "auth") {
+            val code = data.getQueryParameter("code")
+            if (!code.isNullOrEmpty()) {
+                oauthVM.handleAuthCode(code)
+            }
+        }
     }
 }

@@ -9,21 +9,14 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlaylistPlay
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ModalDrawerSheet
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -37,6 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.practicas.viewmodel.MusicViewModel
 
+// ==========================================================
+// COMPONENTE PRINCIPAL DE ITEM DEL DRAWER
+// ==========================================================
+
 @Composable
 fun DrawerItemPro(
     label: String,
@@ -46,7 +43,9 @@ fun DrawerItemPro(
     extraBadge: Int? = null,
     onClick: () -> Unit
 ) {
-    // Rebote ligero al estar seleccionado
+    val colorPrimary = MaterialTheme.colorScheme.primary
+    val onSurface = MaterialTheme.colorScheme.onSurface
+
     val scale by animateFloatAsState(
         targetValue = if (selected) 1.08f else 1f,
         animationSpec = spring(
@@ -56,7 +55,6 @@ fun DrawerItemPro(
         label = ""
     )
 
-    // Fade-in inicial
     val alpha by animateFloatAsState(
         targetValue = 1f,
         animationSpec = tween(450),
@@ -73,18 +71,18 @@ fun DrawerItemPro(
             Icon(
                 imageVector = if (selected) selectedIcon else icon,
                 contentDescription = label,
-                tint = if (selected) MaterialTheme.colorScheme.primary else Color.White
+                tint = if (selected) colorPrimary else onSurface
             )
         },
         label = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = label,
-                    color = if (selected) MaterialTheme.colorScheme.primary else Color.White
+                    color = if (selected) colorPrimary else onSurface
                 )
 
                 if (extraBadge != null && extraBadge > 0) {
-                    Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
 
                     AnimatedVisibility(
                         visible = true,
@@ -94,14 +92,14 @@ fun DrawerItemPro(
                         Box(
                             modifier = Modifier
                                 .background(
-                                    MaterialTheme.colorScheme.primary,
+                                    colorPrimary,
                                     CircleShape
                                 )
                                 .padding(horizontal = 10.dp, vertical = 2.dp)
                         ) {
                             Text(
                                 text = extraBadge.toString(),
-                                color = Color.White,
+                                color = MaterialTheme.colorScheme.onPrimary,
                                 style = MaterialTheme.typography.labelSmall
                             )
                         }
@@ -111,6 +109,11 @@ fun DrawerItemPro(
         }
     )
 }
+
+// ==========================================================
+// CONTENIDO DEL DRAWER (LISTA DE PLAYLISTS Y FAVORITOS)
+// ==========================================================
+
 @Composable
 fun DrawerContent(
     navController: NavHostController,
@@ -118,23 +121,35 @@ fun DrawerContent(
     currentRoute: String?,
     closeDrawer: () -> Unit
 ) {
-    ModalDrawerSheet {
+    val onBackground = MaterialTheme.colorScheme.onBackground
 
+    ModalDrawerSheet(
+        drawerContainerColor = MaterialTheme.colorScheme.surface
+    ) {
+        // ---------------- TÍTULO PLAYLISTS ----------------
         Text(
             text = "Playlists",
             style = MaterialTheme.typography.titleMedium,
+            color = onBackground,
             modifier = Modifier.padding(16.dp)
         )
 
+        // Cada playlist
         NavigationDrawerItem(
             label = { Text("IM BORED") },
             selected = false,
             onClick = {
                 musicVM.loadImBored()
-                navController.navigate("home")
+                navController.navigate("home") { launchSingleTop = true }
                 closeDrawer()
             },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+            icon = {
+                Icon(
+                    Icons.Default.PlaylistPlay,
+                    contentDescription = null,
+                    tint = onBackground
+                )
+            }
         )
 
         NavigationDrawerItem(
@@ -142,10 +157,16 @@ fun DrawerContent(
             selected = false,
             onClick = {
                 musicVM.loadFavorito()
-                navController.navigate("home")
+                navController.navigate("home") { launchSingleTop = true }
                 closeDrawer()
             },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+            icon = {
+                Icon(
+                    Icons.Default.PlaylistPlay,
+                    contentDescription = null,
+                    tint = onBackground
+                )
+            }
         )
 
         NavigationDrawerItem(
@@ -153,10 +174,16 @@ fun DrawerContent(
             selected = false,
             onClick = {
                 musicVM.loadGymTraining()
-                navController.navigate("home")
+                navController.navigate("home") { launchSingleTop = true }
                 closeDrawer()
             },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+            icon = {
+                Icon(
+                    Icons.Default.PlaylistPlay,
+                    contentDescription = null,
+                    tint = onBackground
+                )
+            }
         )
 
         NavigationDrawerItem(
@@ -164,16 +191,23 @@ fun DrawerContent(
             selected = false,
             onClick = {
                 musicVM.loadShesIsJustAGirl()
-                navController.navigate("home")
+                navController.navigate("home") { launchSingleTop = true }
                 closeDrawer()
             },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+            icon = {
+                Icon(
+                    Icons.Default.PlaylistPlay,
+                    contentDescription = null,
+                    tint = onBackground
+                )
+            }
         )
 
-        // ---- Sección biblioteca personal ----
+        // ---------------- TÍTULO BIBLIOTECA PERSONAL ----------------
         Text(
             text = "Tu biblioteca",
             style = MaterialTheme.typography.titleMedium,
+            color = onBackground,
             modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
         )
 
@@ -186,10 +220,9 @@ fun DrawerContent(
             selected = currentRoute == "liked",
             extraBadge = liked.size,
             onClick = {
-                navController.navigate("liked")
+                navController.navigate("liked") { launchSingleTop = true }
                 closeDrawer()
             }
         )
     }
 }
-

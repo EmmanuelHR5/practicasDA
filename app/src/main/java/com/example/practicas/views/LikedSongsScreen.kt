@@ -40,19 +40,22 @@ fun LikedSongsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black)
+            .background(MaterialTheme.colorScheme.background)
     ) {
 
         Text(
             text = "Favoritos ❤️",
-            color = Color.White,
+            color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )
 
         if (liked.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No tienes canciones guardadas.", color = Color.Gray)
+                Text(
+                    "No tienes canciones guardadas.",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         } else {
             LazyColumn {
@@ -61,11 +64,10 @@ fun LikedSongsScreen(
                         track = track,
                         onRemoveConfirmed = { viewModel.removeFavorite(track) },
                         onClick = {
-                            val context = navController.context  // o LocalContext.current
+                            val context = navController.context
                             viewModel.selectTrack(context, track)
                             navController.navigate("trackDetail")
                         }
-
                     )
                 }
             }
@@ -82,21 +84,18 @@ fun FavoriteItemAnimated(
     var showDialog by remember { mutableStateOf(false) }
     var shouldRemove by remember { mutableStateOf(false) }
 
-    // Estado de swipe
     val dismissState = rememberSwipeToDismissBoxState(
         confirmValueChange = { value ->
             if (value == SwipeToDismissBoxValue.EndToStart ||
                 value == SwipeToDismissBoxValue.StartToEnd
             ) {
-                // En lugar de borrar directo → mostramos diálogo
                 showDialog = true
-                return@rememberSwipeToDismissBoxState false // cancelar swipe real
+                return@rememberSwipeToDismissBoxState false
             }
             true
         }
     )
 
-    // Animación de desaparecer al confirmar
     AnimatedVisibility(
         visible = !shouldRemove,
         exit = shrinkVertically() + fadeOut()
@@ -107,13 +106,13 @@ fun FavoriteItemAnimated(
                 Box(
                     Modifier
                         .fillMaxSize()
-                        .background(Color.Red.copy(alpha = 0.7f)),
+                        .background(MaterialTheme.colorScheme.errorContainer),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Icon(
                         Icons.Default.Favorite,
                         contentDescription = null,
-                        tint = Color.White,
+                        tint = MaterialTheme.colorScheme.onErrorContainer,
                         modifier = Modifier.padding(start = 24.dp)
                     )
                 }
@@ -131,13 +130,11 @@ fun FavoriteItemAnimated(
                 Icon(
                     Icons.Default.Favorite,
                     contentDescription = null,
-                    tint = Color.Red
+                    tint = MaterialTheme.colorScheme.error
                 )
             },
             title = { Text("Quitar de favoritos") },
-            text = {
-                Text("¿Deseas quitar \"${track.name}\" de tus favoritos?")
-            },
+            text = { Text("¿Deseas quitar \"${track.name}\" de tus favoritos?") },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -146,14 +143,15 @@ fun FavoriteItemAnimated(
                         onRemoveConfirmed()
                     }
                 ) {
-                    Text("Sí, quitar", color = Color.Red)
+                    Text("Sí, quitar", color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
                     Text("Cancelar")
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
         )
     }
 }
@@ -180,10 +178,14 @@ fun FavoriteRow(track: SpotifyTrack, onClick: () -> Unit) {
         Spacer(modifier = Modifier.width(12.dp))
 
         Column(Modifier.weight(1f)) {
-            Text(track.name, color = Color.White)
+            Text(
+                track.name,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.bodyLarge
+            )
             Text(
                 track.artists.joinToString { it.name },
-                color = Color.LightGray,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall
             )
         }

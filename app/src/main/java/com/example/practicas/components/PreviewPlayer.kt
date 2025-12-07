@@ -37,24 +37,18 @@ fun PreviewPlayer(
 
     val context = LocalContext.current
 
-    // ExoPlayer + DataSource con headers para Deezer / Akamai
     val exoPlayer = remember(previewUrl) {
         try {
             val httpDataSourceFactory = DefaultHttpDataSource.Factory()
-                .setUserAgent("Mozilla/5.0 (Android)")
-                .setDefaultRequestProperties(
-                    mapOf(
-                        "Accept" to "*/*"
-                    )
-                )
+                .setUserAgent("Mozilla/5.0")
+                .setDefaultRequestProperties(mapOf("Accept" to "*/*"))
 
             val mediaSourceFactory = DefaultMediaSourceFactory(httpDataSourceFactory)
 
             ExoPlayer.Builder(context)
                 .setMediaSourceFactory(mediaSourceFactory)
                 .build().apply {
-                    val mediaItem = MediaItem.fromUri(previewUrl)
-                    setMediaItem(mediaItem)
+                    setMediaItem(MediaItem.fromUri(previewUrl))
                     prepare()
                 }
         } catch (e: Exception) {
@@ -69,9 +63,10 @@ fun PreviewPlayer(
     var durationMs by remember { mutableStateOf(30_000L) }
     var progress by remember { mutableStateOf(0f) }
 
-    // Listener para cambios de reproducción
+    // Listener
     DisposableEffect(exoPlayer) {
         val listener = object : Player.Listener {
+
             override fun onIsPlayingChanged(isPlayingNow: Boolean) {
                 isPlaying = isPlayingNow
             }
@@ -96,7 +91,7 @@ fun PreviewPlayer(
         }
     }
 
-    // Actualizar barra de progreso mientras se reproduce
+    // Actualizar barra
     LaunchedEffect(isPlaying) {
         while (isPlaying) {
             val pos = exoPlayer.currentPosition
@@ -107,7 +102,7 @@ fun PreviewPlayer(
 
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
-        animationSpec = tween(durationMillis = 200, easing = LinearEasing),
+        animationSpec = tween(200, easing = LinearEasing),
         label = "previewProgress"
     )
 
@@ -124,15 +119,18 @@ fun PreviewPlayer(
         }
     }
 
-    // ---------------- UI ----------------
+    // ---------------- UI ADAPTADA A MODO CLARO/OSCURO ----------------
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
+
+            // Botón Play/Pause adaptado
             IconButton(
                 onClick = { togglePlay() },
                 modifier = Modifier
@@ -141,7 +139,7 @@ fun PreviewPlayer(
             ) {
                 Icon(
                     imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                    contentDescription = if (isPlaying) "Pausar preview" else "Reproducir preview",
+                    contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
@@ -151,8 +149,12 @@ fun PreviewPlayer(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
+
+                // Barra de progreso adaptada al tema
                 LinearProgressIndicator(
                     progress = { animatedProgress },
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(6.dp),
@@ -163,6 +165,7 @@ fun PreviewPlayer(
                 val currentSec = (durationMs * progress).toInt() / 1000
                 val totalSec = (durationMs / 1000).toInt()
 
+                // Tiempos adaptados al tema
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -170,12 +173,12 @@ fun PreviewPlayer(
                     Text(
                         text = "0:${currentSec.toString().padStart(2, '0')}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "0:${totalSec.toString().padStart(2, '0')}",
                         style = MaterialTheme.typography.labelSmall,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

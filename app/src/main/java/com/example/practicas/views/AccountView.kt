@@ -22,10 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.practicas.oAuth.TokenStore
 import com.example.practicas.viewmodel.MusicViewModel
-import android.util.Log
-
 
 @Composable
 fun AccountView(
@@ -41,30 +38,23 @@ fun AccountView(
     var showUnlinkDialog by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
 
-    // Cargar datos extra cuando el usuario se obtuvo
+    // Cargar datos extras cuando ya hay usuario
     LaunchedEffect(user) {
         if (user != null) {
             viewModel.loadExtraProfileData()
         }
     }
 
-    // Fondo tipo Spotify
+    // Fondo adaptable al tema
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    listOf(
-                        Color(0xFF0F0F0F),
-                        Color(0xFF000000)
-                    )
-                )
-            )
+            .background(MaterialTheme.colorScheme.background)
     ) {
 
         if (user == null) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Color(0xFF1DB954))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         } else {
 
@@ -83,6 +73,7 @@ fun AccountView(
                     modifier = Modifier
                         .size(150.dp)
                         .shadow(20.dp, CircleShape, clip = true)
+                        .background(MaterialTheme.colorScheme.surface)
                 ) {
                     AsyncImage(
                         model = user!!.images.firstOrNull()?.url,
@@ -101,7 +92,7 @@ fun AccountView(
                     text = user!!.display_name ?: "Usuario",
                     fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -111,6 +102,7 @@ fun AccountView(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    // Badge Premium (Mantiene gradiente)
                     Box(
                         modifier = Modifier
                             .background(
@@ -124,15 +116,16 @@ fun AccountView(
                         Text("PREMIUM", color = Color.Black, fontWeight = FontWeight.Bold)
                     }
 
+                    // Badge País (adaptado a tema)
                     Box(
                         modifier = Modifier
                             .background(
-                                Color.DarkGray.copy(alpha = 0.6f),
+                                MaterialTheme.colorScheme.surfaceVariant,
                                 RoundedCornerShape(20.dp)
                             )
                             .padding(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Text(user!!.country ?: "MX", color = Color.White)
+                        Text(user!!.country ?: "MX", color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
 
@@ -140,10 +133,11 @@ fun AccountView(
 
                 // ===== CARD INFORMACIÓN =====
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF121212)),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .widthIn(max = 420.dp)
                         .shadow(10.dp, RoundedCornerShape(16.dp)),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -160,7 +154,7 @@ fun AccountView(
                 // ===== ESTADÍSTICAS =====
                 Text(
                     "Estadísticas del usuario",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -177,7 +171,7 @@ fun AccountView(
                 // ===== ACCIONES =====
                 Text(
                     "Opciones",
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier
@@ -195,7 +189,7 @@ fun AccountView(
 
                     ActionButton(
                         text = "Ver perfil en Spotify",
-                        color = Color(0xFF1DB954)
+                        color = MaterialTheme.colorScheme.primary
                     ) {
                         val url = user!!.external_urls["spotify"]
                         if (url != null) {
@@ -207,14 +201,14 @@ fun AccountView(
 
                     ActionButton(
                         text = "Actualizar información",
-                        color = Color(0xFF3D3D3D)
+                        color = MaterialTheme.colorScheme.secondary
                     ) {
                         viewModel.loadUserProfile()
                     }
 
                     ActionButton(
                         text = "Desvincular cuenta",
-                        color = Color(0xFFD9534F)
+                        color = MaterialTheme.colorScheme.error
                     ) {
                         showUnlinkDialog = true
                     }
@@ -224,10 +218,9 @@ fun AccountView(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(48.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        border = ButtonDefaults.outlinedButtonBorder
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Text("Cerrar sesión local", color = Color.White)
+                        Text("Cerrar sesión local", color = MaterialTheme.colorScheme.onSurface)
                     }
                 }
 
@@ -243,7 +236,7 @@ fun AccountView(
             title = "Desvincular cuenta",
             text = "Esto eliminará tus tokens y deberás iniciar sesión nuevamente.",
             confirmText = "Desvincular",
-            confirmColor = Color.Red,
+            confirmColor = MaterialTheme.colorScheme.error,
             onConfirm = {
                 viewModel.logout()
                 showUnlinkDialog = false
@@ -257,7 +250,7 @@ fun AccountView(
             title = "Cerrar sesión",
             text = "Esto cerrará tu sesión local, pero no revocará el acceso a Spotify.",
             confirmText = "Cerrar sesión",
-            confirmColor = Color.Red,
+            confirmColor = MaterialTheme.colorScheme.error,
             onConfirm = {
                 viewModel.logout()
                 showLogoutDialog = false
@@ -267,7 +260,6 @@ fun AccountView(
     }
 }
 
-
 // ------------------------------------------------------------
 // COMPONENTES REUTILIZABLES
 // ------------------------------------------------------------
@@ -275,8 +267,17 @@ fun AccountView(
 @Composable
 fun InfoRow(label: String, value: String) {
     Column {
-        Text(label, color = Color.Gray, fontSize = 13.sp)
-        Text(value, color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+        Text(
+            label,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+            fontSize = 13.sp
+        )
+        Text(
+            value,
+            color = MaterialTheme.colorScheme.onSurface,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Medium
+        )
         Spacer(Modifier.height(4.dp))
     }
 }
@@ -291,7 +292,7 @@ fun ActionButton(text: String, color: Color, onClick: () -> Unit) {
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(containerColor = color)
     ) {
-        Text(text, color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
+        Text(text, color = MaterialTheme.colorScheme.onPrimary, fontSize = 15.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -306,9 +307,9 @@ fun ConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = Color(0xFF1C1C1C),
-        title = { Text(title, color = Color.White) },
-        text = { Text(text, color = Color.Gray) },
+        containerColor = MaterialTheme.colorScheme.surface,
+        title = { Text(title, color = MaterialTheme.colorScheme.onSurface) },
+        text = { Text(text, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)) },
         confirmButton = {
             TextButton(onClick = onConfirm) {
                 Text(confirmText, color = confirmColor)
@@ -316,7 +317,7 @@ fun ConfirmationDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = Color.White)
+                Text("Cancelar", color = MaterialTheme.colorScheme.onSurface)
             }
         }
     )
@@ -325,7 +326,7 @@ fun ConfirmationDialog(
 @Composable
 fun StatCard(title: String, value: String) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier
             .fillMaxWidth()
             .height(65.dp)
@@ -340,9 +341,17 @@ fun StatCard(title: String, value: String) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(title, color = Color.Gray, fontSize = 14.sp)
-            Text(value, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                title,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                fontSize = 14.sp
+            )
+            Text(
+                value,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
-

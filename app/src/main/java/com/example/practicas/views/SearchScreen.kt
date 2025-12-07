@@ -51,9 +51,11 @@ fun SearchScreen(
                 SearchResultItem(
                     track = track,
                     onClick = {
-                        viewModel.selectTrack(track)
+                        val context = navController.context
+                        viewModel.selectTrack(context, track)
                         navController.navigate("trackDetail")
                     }
+
                 )
             }
         }

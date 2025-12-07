@@ -14,11 +14,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.PlaylistPlay
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +34,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.practicas.viewmodel.MusicViewModel
 
 @Composable
 fun DrawerItemPro(
@@ -102,3 +111,85 @@ fun DrawerItemPro(
         }
     )
 }
+@Composable
+fun DrawerContent(
+    navController: NavHostController,
+    musicVM: MusicViewModel,
+    currentRoute: String?,
+    closeDrawer: () -> Unit
+) {
+    ModalDrawerSheet {
+
+        Text(
+            text = "Playlists",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(16.dp)
+        )
+
+        NavigationDrawerItem(
+            label = { Text("IM BORED") },
+            selected = false,
+            onClick = {
+                musicVM.loadImBored()
+                navController.navigate("home")
+                closeDrawer()
+            },
+            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+        )
+
+        NavigationDrawerItem(
+            label = { Text("Favorito (Spotify)") },
+            selected = false,
+            onClick = {
+                musicVM.loadFavorito()
+                navController.navigate("home")
+                closeDrawer()
+            },
+            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+        )
+
+        NavigationDrawerItem(
+            label = { Text("GYM TRAINING") },
+            selected = false,
+            onClick = {
+                musicVM.loadGymTraining()
+                navController.navigate("home")
+                closeDrawer()
+            },
+            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+        )
+
+        NavigationDrawerItem(
+            label = { Text("She Is Just A Girl") },
+            selected = false,
+            onClick = {
+                musicVM.loadShesIsJustAGirl()
+                navController.navigate("home")
+                closeDrawer()
+            },
+            icon = { Icon(Icons.Default.PlaylistPlay, null) }
+        )
+
+        // ---- Sección biblioteca personal ----
+        Text(
+            text = "Tu biblioteca",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
+        )
+
+        val liked by musicVM.likedTracks.collectAsState()
+
+        DrawerItemPro(
+            label = "Favoritos ❤️",
+            icon = Icons.Default.FavoriteBorder,
+            selectedIcon = Icons.Default.Favorite,
+            selected = currentRoute == "liked",
+            extraBadge = liked.size,
+            onClick = {
+                navController.navigate("liked")
+                closeDrawer()
+            }
+        )
+    }
+}
+

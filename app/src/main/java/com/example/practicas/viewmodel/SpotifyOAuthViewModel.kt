@@ -44,14 +44,21 @@ class SpotifyOAuthViewModel(app: Application) : AndroidViewModel(app) {
         isAuthenticated.value = false
     }
     fun startOAuth(activity: Activity) {
-        val url = "https://accounts.spotify.com/authorize?" +
-                "client_id=${SpotifyConfig.CLIENT_ID}" +
-                "&response_type=code" +
-                "&redirect_uri=${SpotifyConfig.REDIRECT_URI}" +
-                "&scope=${SpotifyConfig.SCOPES}"
+
+        val scopes = SpotifyConfig.scopes.joinToString(" ")
+        val encodedScopes = Uri.encode(scopes)
+        val encodedRedirect = Uri.encode(SpotifyConfig.REDIRECT_URI)
+
+        val url =
+            "https://accounts.spotify.com/authorize" +
+                    "?client_id=${SpotifyConfig.CLIENT_ID}" +
+                    "&response_type=code" +
+                    "&redirect_uri=$encodedRedirect" +
+                    "&scope=$encodedScopes"
 
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
         activity.startActivity(intent)
     }
+
 
 }

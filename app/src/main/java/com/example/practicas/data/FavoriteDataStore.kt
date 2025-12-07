@@ -22,21 +22,48 @@ object FavoritesSerializer : Serializer<FavoritesFile> {
 
     override suspend fun readFrom(input: InputStream): FavoritesFile {
         return try {
-            Json.decodeFromString(
+            val decoded = Json.decodeFromString(
                 FavoritesFile.serializer(),
                 input.readBytes().decodeToString()
+            )
+
+            // Saneado adicional
+            FavoritesFile(
+                tracks = decoded.tracks.map { track ->
+                    track.copy(
+                        artists = track.artists ?: emptyList(),
+                        album = track.album.copy(
+                            images = track.album.images ?: emptyList(),
+                            artists = track.album.artists ?: emptyList()
+                        )
+                    )
+                }
             )
         } catch (e: Exception) {
             FavoritesFile()
         }
     }
 
+
     override suspend fun writeTo(t: FavoritesFile, output: OutputStream) {
+        val safeTracks = t.tracks.map { track ->
+            track.copy(
+                artists = track.artists ?: emptyList(),
+                album = track.album.copy(
+                    artists = track.album.artists ?: emptyList(),
+                    images = track.album.images ?: emptyList()
+                )
+            )
+        }
+
+        val sanitized = FavoritesFile(safeTracks)
+
         output.write(
-            Json.encodeToString(FavoritesFile.serializer(), t)
+            Json.encodeToString(FavoritesFile.serializer(), sanitized)
                 .encodeToByteArray()
         )
     }
+
 }
 
 val Context.favoritesDataStore: DataStore<FavoritesFile> by dataStore(

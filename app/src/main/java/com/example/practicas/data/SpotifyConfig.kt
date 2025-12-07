@@ -9,8 +9,15 @@ object SpotifyConfig {
 
     const val REDIRECT_URI = "com.example.practicas://auth"
 
-    const val SCOPES =
-        "playlist-read-private playlist-read-collaborative user-read-email"
+    val scopes = listOf(
+        "user-read-email",
+        "user-read-private",
+        "playlist-read-private",
+        "playlist-read-collaborative",
+        "user-library-read",
+        "user-top-read"
+    )
+
 
     // PLAYLISTS
     const val PLAYLIST_SHE_IS_JUST_A_GIRL = "6HZ4fe1GTnWxnRtEckm5jm"

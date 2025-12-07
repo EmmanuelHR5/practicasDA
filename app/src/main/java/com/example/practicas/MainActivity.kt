@@ -1,9 +1,11 @@
 package com.example.practicas
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModelProvider
 import androidx.compose.runtime.*
 import androidx.navigation.compose.rememberNavController
@@ -19,6 +21,7 @@ class MainActivity : ComponentActivity() {
     private lateinit var oauthVM: SpotifyOAuthViewModel
     private lateinit var musicVM: MusicViewModel
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -40,8 +43,15 @@ class MainActivity : ComponentActivity() {
 
                 val isLoggedIn by oauthVM.isAuthenticated.collectAsState()
 
+                LaunchedEffect(isLoggedIn) {
+                    if (isLoggedIn) {
+                        musicVM.loadUserProfile()
+                    }
+                }
+
                 if (!isLoggedIn) {
                     LoginSpotifyScreen(oauthVM)
+
                 } else {
                     AppNavigation(
                         navController = navController,

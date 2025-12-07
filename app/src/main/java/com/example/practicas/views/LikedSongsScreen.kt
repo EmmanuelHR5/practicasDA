@@ -61,9 +61,11 @@ fun LikedSongsScreen(
                         track = track,
                         onRemoveConfirmed = { viewModel.removeFavorite(track) },
                         onClick = {
-                            viewModel.selectTrack(track)
+                            val context = navController.context  // o LocalContext.current
+                            viewModel.selectTrack(context, track)
                             navController.navigate("trackDetail")
                         }
+
                     )
                 }
             }

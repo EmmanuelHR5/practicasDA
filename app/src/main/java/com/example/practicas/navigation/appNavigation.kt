@@ -39,6 +39,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.example.practicas.components.DrawerContent
 import com.example.practicas.components.DrawerItemPro
 import com.example.practicas.viewmodel.MusicViewModel
 import com.example.practicas.views.AccountView
@@ -80,7 +81,7 @@ fun AppNavigation(
                     title = { Text("Spotify Client") },
                     navigationIcon = {
                         IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(Icons.Default.Menu, "Menú")
+                            Icon(Icons.Default.Menu, contentDescription = "Menú")
                         }
                     },
                     actions = {
@@ -88,8 +89,7 @@ fun AppNavigation(
                             Icon(
                                 imageVector = if (isSystemInDarkTheme())
                                     Icons.Default.LightMode
-                                else
-                                    Icons.Default.DarkMode,
+                                else Icons.Default.DarkMode,
                                 contentDescription = "Cambiar tema"
                             )
                         }
@@ -99,13 +99,11 @@ fun AppNavigation(
 
             bottomBar = {
                 NavigationBar {
-                    val route = currentRoute
-
                     NavigationBarItem(
-                        selected = route == "home",
+                        selected = currentRoute == "home",
                         onClick = {
                             navController.navigate("home") {
-                                popUpTo("home")
+                                popUpTo("home") { inclusive = false }
                                 launchSingleTop = true
                             }
                         },
@@ -113,10 +111,10 @@ fun AppNavigation(
                     )
 
                     NavigationBarItem(
-                        selected = route == "search",
+                        selected = currentRoute == "search",
                         onClick = {
                             navController.navigate("search") {
-                                popUpTo("home")
+                                popUpTo("home") { inclusive = false }
                                 launchSingleTop = true
                             }
                         },
@@ -124,10 +122,10 @@ fun AppNavigation(
                     )
 
                     NavigationBarItem(
-                        selected = route == "account",
+                        selected = currentRoute == "account",
                         onClick = {
                             navController.navigate("account") {
-                                popUpTo("home")
+                                popUpTo("home") { inclusive = false }
                                 launchSingleTop = true
                             }
                         },
@@ -165,21 +163,23 @@ fun AppNavigation(
                 }
 
                 composable("trackDetail") {
-                    val track by musicVM.selectedTrack.collectAsState()
-                    val original by musicVM.lyricsOriginal.collectAsState()
-                    val translated by musicVM.lyricsTranslated.collectAsState()
 
-                    track?.let {
+                    val track = musicVM.selectedTrack.collectAsState().value
+
+                    if (track != null) {
                         TrackDetailScreen(
-                            track = it,
-                            lyricsOriginal = original,
-                            lyricsTranslated = translated,
-                            onBack = { navController.popBackStack() }
+                            musicVM = musicVM,
+                            track = track,
+                            onBack = {
+                                navController.popBackStack()
+
+                                // Limpia letras para evitar parpadeo al cambiar canción
+                                musicVM.clearSelectedTrack()
+                            }
                         )
                     }
                 }
 
-                // 🆕 Pantalla de favoritos (playlist "me gusta")
                 composable("liked") {
                     LikedSongsScreen(
                         viewModel = musicVM,
@@ -191,84 +191,3 @@ fun AppNavigation(
     }
 }
 
-@Composable
-fun DrawerContent(
-    navController: NavHostController,
-    musicVM: MusicViewModel,
-    currentRoute: String?,
-    closeDrawer: () -> Unit
-) {
-    ModalDrawerSheet {
-
-        Text(
-            text = "Playlists",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(16.dp)
-        )
-
-        NavigationDrawerItem(
-            label = { Text("IM BORED") },
-            selected = false,
-            onClick = {
-                musicVM.loadImBored()
-                navController.navigate("home")
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
-        )
-
-        NavigationDrawerItem(
-            label = { Text("Favorito (Spotify)") },
-            selected = false,
-            onClick = {
-                musicVM.loadFavorito()
-                navController.navigate("home")
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
-        )
-
-        NavigationDrawerItem(
-            label = { Text("GYM TRAINING") },
-            selected = false,
-            onClick = {
-                musicVM.loadGymTraining()
-                navController.navigate("home")
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
-        )
-
-        NavigationDrawerItem(
-            label = { Text("She Is Just A Girl") },
-            selected = false,
-            onClick = {
-                musicVM.loadShesIsJustAGirl()
-                navController.navigate("home")
-                closeDrawer()
-            },
-            icon = { Icon(Icons.Default.PlaylistPlay, null) }
-        )
-
-        // 🆕 Sección de biblioteca personal
-        Text(
-            text = "Tu biblioteca",
-            style = MaterialTheme.typography.titleMedium,
-            modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
-        )
-
-        val liked by musicVM.likedTracks.collectAsState()
-
-        DrawerItemPro(
-            label = "Favoritos ❤️",
-            icon = Icons.Default.FavoriteBorder,
-            selectedIcon = Icons.Default.Favorite,
-            selected = currentRoute == "liked",
-            extraBadge = liked.size,
-            onClick = {
-                navController.navigate("liked")
-                closeDrawer()
-            }
-        )
-    }
-}

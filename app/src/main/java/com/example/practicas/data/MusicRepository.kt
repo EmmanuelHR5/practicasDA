@@ -100,40 +100,34 @@ class MusicRepository(
     suspend fun translateWithDeepL(text: String, targetLang: String): String {
         if (text.isBlank() || text == "_loading_") return ""
 
-        val MAX_CHARS = 4500   // DeepL Free seguro
-
-        // 1️⃣ Dividir texto en chunks
-        val chunks = text.chunked(MAX_CHARS)
-
+        val clean = cleanBeforeTranslate(text)
+        val MAX_CHARS = 4500
+        val chunks = clean.chunked(MAX_CHARS)
         val resultado = StringBuilder()
 
-        for ((index, chunk) in chunks.withIndex()) {
+        for ((index, rawChunk) in chunks.withIndex()) {
 
-            Log.d("DeepL", "📦 Traduciendo chunk ${index + 1}/${chunks.size} (${chunk.length} chars)")
+            val chunk = rawChunk
+                .replace("\\", "\\\\")   // Escapa backslashes
+                .replace("\"", "\\\"")   // Escapa comillas dobles
+                .trim()
 
             try {
                 val client = okhttp3.OkHttpClient()
 
-                val reqBody = okhttp3.FormBody.Builder()
+                val body = okhttp3.FormBody.Builder()
                     .add("auth_key", SpotifyConfig.DEEPL_API_KEY)
                     .add("text", chunk)
-                    .add("source_lang", "EN")
-                    .add("target_lang", targetLang)
+                    .add("target_lang", targetLang) // SIN source_lang
                     .build()
-
-                Log.d("DeepL", "🔑 API KEY usada: ${SpotifyConfig.DEEPL_API_KEY}")
-                Log.d("DeepL", "🌐 URL endpoint: https://api-free.deepl.com/v2/translate")
-                Log.d("DeepL", "📤 BODY:\n${reqBody.toString()}")
 
                 val request = okhttp3.Request.Builder()
                     .url("https://api-free.deepl.com/v2/translate")
-                    .post(reqBody)
+                    .post(body)
                     .build()
 
                 val response = client.newCall(request).execute()
                 val json = response.body?.string()
-
-                Log.d("DeepL", "📩 Respuesta chunk ${index+1}: $json")
 
                 val translated = Regex("\"text\":\"(.*?)\"")
                     .find(json ?: "")
@@ -144,16 +138,34 @@ class MusicRepository(
 
                 if (!translated.isNullOrBlank()) {
                     resultado.append(translated).append("\n\n")
-                } else {
-                    Log.e("DeepL", "❌ Chunk ${index + 1} devolvió vacío")
                 }
 
             } catch (e: Exception) {
-                Log.e("DeepL", "💥 EXCEPCIÓN: ${e::class.java.name} -> ${e.message}")
+                Log.e("DeepL", "ERROR chunk ${index+1}: ${e.message}")
             }
         }
 
         return resultado.toString().trim()
+    }
+
+
+    // Obtener playlists del usuario
+    suspend fun getUserPlaylists(limit: Int = 1): SpotifyPlaylistResponse {
+        val token = "Bearer ${TokenStore.getValidAccessToken()}"
+        return api.getUserPlaylists(limit, token)
+    }
+
+    // Top artistas
+    suspend fun getTopArtists(): List<SpotifyArtist> {
+        val token = "Bearer ${TokenStore.getValidAccessToken()}"
+        return api.getTopArtists(token).items
+    }
+
+    fun cleanBeforeTranslate(text: String): String {
+        return text
+            .replace(Regex("\\[.*?]"), "") // elimina cualquier bloque [ ... ]
+            .replace(Regex("\\s+"), " ")   // reduce espacios excesivos
+            .trim()
     }
 
 
